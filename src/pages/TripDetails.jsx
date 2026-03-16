@@ -12,7 +12,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import TripStats from "../components/shared/Tripstats";
+import TripStats from "../components/shared/TripStats";
 import { getPlacePhoto } from "../services/placePhotoApi";
 
 export function Example() {
