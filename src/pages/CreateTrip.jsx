@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { BUDGET_OPTIONS, TRAVELER_OPTIONS } from "../assets/data";
-import { generateTripWithAI } from "../services/AIModel";
+import { generateTripWithAI } from "../services/aiModel";
 import LoginDialog from "../components/shared/LoginDialog";
 import { toast, Toaster } from "sonner";
 import { doc, setDoc } from "firebase/firestore";
