@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { getPlacePhoto } from "../../services/placePhotoApi";
 
 const ActivityCard = ({ activity }) => {
@@ -65,6 +66,21 @@ const ActivityCard = ({ activity }) => {
       </div>
     </div>
   );
+};
+
+ActivityCard.propTypes = {
+  activity: PropTypes.shape({
+    activityName: PropTypes.string,
+    description: PropTypes.string,
+    imageUrl: PropTypes.string,
+    ticketPrice: PropTypes.string,
+    timeRange: PropTypes.string,
+    timeToTravel: PropTypes.string,
+    coordinate: PropTypes.shape({
+      latitude: PropTypes.number,
+      longitude: PropTypes.number,
+    }),
+  }),
 };
 
 export default ActivityCard;

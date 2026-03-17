@@ -1,5 +1,6 @@
 import { Banknote, Clock, Info, MapPin, Users } from 'lucide-react'
 import React from 'react'
+import PropTypes from "prop-types";
 
 const TripStats = ({trip}) => {
   return trip && (
@@ -43,4 +44,18 @@ const TripStats = ({trip}) => {
   )
 }
 
-export default TripStats
+TripStats.propTypes = {
+  trip: PropTypes.shape({
+    userSelection: PropTypes.shape({
+      destination: PropTypes.string,
+      budget: PropTypes.string,
+      traveler: PropTypes.string,
+      noOfDays: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    tripData: PropTypes.shape({
+      tripNote: PropTypes.string,
+    }),
+  }),
+};
+
+export default TripStats;

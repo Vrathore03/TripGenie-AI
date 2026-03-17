@@ -31,10 +31,6 @@ const CreateTrip = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
-
   const [suggestions, setSuggestions] = useState([]);
 
   const API_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY;
@@ -81,30 +77,36 @@ const CreateTrip = () => {
       return toast.error("AI can currently generate upto 5 days only.");
     }
 
+    if (!formData.destination || !formData.noOfDays || !formData.traveler || !formData.budget) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const days = parseInt(formData.noOfDays);
+    if (isNaN(days) || days < 1 || days > 5) {
+      toast.error("Please enter a valid number of days (1-5)");
+      return;
+    }
+
     setLoading(true);
-    // console.log(formData);
 
     const DYNAMIC_PROMPT = `Generate a travel plan for Location: ${formData?.destination} for ${formData?.noOfDays} days for a ${formData?.traveler} traveler on ${formData?.budget} budget. Return the result strictly as a single JSON object using camelCase keys, the travel plan with a trip note and must feature hotelsOptions array, each hotel with hotelName, hotelAddress, priceRange, imageUrl, ratimg, description, and a coordinate alongside an itinerary array of daily plans. Each day must include a dayNumber, theme, and an activities array, where each activity contains activityName, description, imageUrl, ticketPrice, timeRange, tiemToTravel and coordinates.`;
 
     try {
       const tripData = await generateTripWithAI(DYNAMIC_PROMPT);
-      // console.log(tripData)
       await saveToDB(tripData);
     } catch (error) {
       setLoading(false);
-      console.log("AI Error:", error);
       toast.error(
         error.message?.includes("429")
           ? "Rate limit hit! Wait 60s."
-          : "Generation failed.",
+          : "Generation failed. Please try again.",
       );
     }
   };
 
   const saveToDB = async (tripdata) => {
     try {
-      console.log("Saving trip to Firestore...");
-
       const user = JSON.parse(localStorage.getItem("user"));
       const docId = Date.now().toString();
 
@@ -115,16 +117,13 @@ const CreateTrip = () => {
         id: docId,
       });
 
-      console.log("Trip saved successfully");
-
       setLoading(false);
-      toast.success("Trip generated!");
+      toast.success("Trip generated successfully!");
 
       navigate("/trips/" + docId);
     } catch (error) {
-      console.log("Firestore Error:", error);
       setLoading(false);
-      toast.error("Failed to save trip.");
+      toast.error("Failed to save trip. Please try again.");
     }
   };
 

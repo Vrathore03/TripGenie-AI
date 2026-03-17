@@ -1,6 +1,6 @@
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 
 export const fetchUserProfile = (accessToken) => {
@@ -13,15 +13,47 @@ export const fetchUserProfile = (accessToken) => {
 }
 
 // Use google Auth hook
-export const useGoogleAuth = ({ onSuccess }) => {
+export const useGoogleAuth = ({ onSuccess, onError }) => {
   return useGoogleLogin({
     onSuccess: async (codeResponse) => {
-        const res = await fetchUserProfile(codeResponse.access_token)
-        localStorage.setItem("user", JSON.stringify(res.data))
+      try {
+        const res = await fetchUserProfile(codeResponse.access_token);
+        localStorage.setItem("user", JSON.stringify(res.data));
         onSuccess?.(res.data);
+      } catch (err) {
+        onError?.(err);
+      }
     },
-    onError: console.log
+    onError: (err) => {
+      onError?.(err);
+    }
   });
+};
+
+// Helper function to format Firebase auth errors
+const formatAuthError = (error) => {
+  const errorCode = error.code || '';
+  console.error("Firebase Auth Error:", errorCode, error.message);
+  switch (errorCode) {
+    case 'auth/user-not-found':
+      return 'No account found with this email';
+    case 'auth/wrong-password':
+      return 'Incorrect password';
+    case 'auth/invalid-email':
+      return 'Invalid email address';
+    case 'auth/email-already-in-use':
+      return 'An account already exists with this email';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters';
+    case 'auth/invalid-credential':
+      return 'Invalid email or password';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection.';
+    default:
+      return error.message || 'Authentication failed';
+  }
 };
 
 // Email/Password Login
@@ -38,7 +70,7 @@ export const loginWithEmailPassword = async (email, password) => {
     localStorage.setItem("user", JSON.stringify(userData));
     return { success: true, user: userData };
   } catch (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: formatAuthError(error) };
   }
 };
 
@@ -63,7 +95,22 @@ export const signUpWithEmailPassword = async (email, password, name) => {
     localStorage.setItem("user", JSON.stringify(userData));
     return { success: true, user: userData };
   } catch (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: formatAuthError(error) };
+  }
+};
+
+// Password Reset
+export const resetPassword = async (email) => {
+  try {
+    const actionCodeSettings = {
+      // URL you want to redirect back to after password reset
+      url: window.location.origin + '/login',
+      handleCodeInApp: false
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: formatAuthError(error) };
   }
 };
 

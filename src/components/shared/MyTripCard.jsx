@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { getPlacePhoto } from "../../services/placePhotoApi";
 import { Banknote, Clock, MapPin, Users } from "lucide-react";
@@ -61,6 +62,21 @@ const MyTripCard = ({ trip }) => {
       </div>
     </Link>
   );
+};
+
+MyTripCard.propTypes = {
+  trip: PropTypes.shape({
+    id: PropTypes.string,
+    userSelection: PropTypes.shape({
+      destination: PropTypes.string,
+      budget: PropTypes.string,
+      traveler: PropTypes.string,
+      noOfDays: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    tripData: PropTypes.shape({
+      tripNote: PropTypes.string,
+    }),
+  }),
 };
 
 export default MyTripCard;
